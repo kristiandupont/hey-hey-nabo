@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "heynabo-ics",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-11",
+
+  // Non-secret configuration. Secrets (HEYNABO_TOKEN, FEED_SECRET) are set with
+  // `npm run token` / `npm run feed-secret` and never live in this file.
+  "vars": {
+    "HEYNABO_BASE_URL": "https://staldhusene.spaces.heynabo.com",
+    "CALENDAR_NAME": "Staldhusene",
+    "PAST_EVENT_WINDOW_DAYS": "30"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

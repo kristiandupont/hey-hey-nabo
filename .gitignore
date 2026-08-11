@@ -1,0 +1,7 @@
+# Contains a live HeyNabo session credential — never commit
+*.har
+
+node_modules/
+dist/
+.dev.vars
+.wrangler/

@@ -1,0 +1,9 @@
+# Copy to .dev.vars (gitignored) for `npm run dev`.
+# In production these are Worker secrets, set via `npm run token` and
+# `npm run feed-secret` — never committed.
+
+# PHPSESSID from a logged-in HeyNabo browser session.
+HEYNABO_TOKEN="paste-phpsessid-here"
+
+# Random path segment for the feed URL: openssl rand -hex 24
+FEED_SECRET="local-dev-secret"
