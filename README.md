@@ -27,10 +27,14 @@ Then set the two secrets. The feed secret is the random path segment that makes 
 URL unguessable — generate a fresh one:
 
 ```bash
-openssl rand -hex 24 | npx wrangler secret put FEED_SECRET
+openssl rand -hex 24        # generate one, and keep the output —
+npm run feed-secret         # Cloudflare cannot show you a secret again
 npm run token               # paste the PHPSESSID value, see below
 npm run deploy
 ```
+
+Copy the generated value somewhere before pasting it: it is half of your feed
+URL, and a secret that has been set can only be replaced, never read back.
 
 Your feed is then at:
 

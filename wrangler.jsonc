@@ -9,10 +9,15 @@
   "vars": {
     "HEYNABO_BASE_URL": "https://staldhusene.spaces.heynabo.com",
     "CALENDAR_NAME": "Staldhusene",
-    "PAST_EVENT_WINDOW_DAYS": "30"
+    "PAST_EVENT_WINDOW_DAYS": "30",
   },
 
+  // Explicit, because declaring "routes" makes Wrangler disable workers.dev by
+  // default — which silently leaves the Worker with no reachable URL if the
+  // route then fails to apply.
+  "workers_dev": true,
+
   "observability": {
-    "enabled": true
-  }
+    "enabled": true,
+  },
 }
