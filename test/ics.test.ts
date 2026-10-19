@@ -114,3 +114,22 @@ test("URL values are not text-escaped", () => {
 
   assert.match(ics, /^URL:https:\/\/example\.com\/desktop\/calendar\/events\r$/m);
 });
+
+test("all-day events use DATE values with an exclusive end", () => {
+  const ics = buildCalendar(
+    [
+      {
+        uid: "u@example.com",
+        start: new Date("2026-12-28T00:00:00Z"),
+        end: new Date("2027-01-04T00:00:00Z"),
+        allDay: true,
+        summary: "Ferietjans",
+        timestamp: new Date("2026-12-28T00:00:00Z"),
+      },
+    ],
+    { name: "Test" },
+  );
+
+  assert.match(ics, /^DTSTART;VALUE=DATE:20261228\r$/m);
+  assert.match(ics, /^DTEND;VALUE=DATE:20270104\r$/m);
+});

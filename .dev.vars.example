@@ -7,3 +7,7 @@ HEYNABO_TOKEN="paste-phpsessid-here"
 
 # Random path segment for the feed URL: openssl rand -hex 24
 FEED_SECRET="local-dev-secret"
+
+# Optional: id of the chore rota Google Sheet (the long segment after /d/ in
+# its URL). Enables ?name=<your name> on the feed URL.
+CHORE_SHEET_ID=""

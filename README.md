@@ -68,6 +68,62 @@ calendar containing a single event on the current day — *"kalenderen mangler e
 token"* — so it shows up in your calendar and you know to rotate it. Repeat the steps
 above; no redeploy needed.
 
+## Chores (tjanselisten)
+
+The community chore rota is a Google Sheet with one tab per week ("Uge 43", …),
+shared as "anyone with the link". Adding `?name=` to the feed URL adds that person's
+chores to their calendar:
+
+```
+webcal://heynabo-ics.<your-subdomain>.workers.dev/<FEED_SECRET>.ics?name=Kristian
+```
+
+The name must be spelled as in the sheet; case and a trailing period are ignored, so
+`michael l` matches "Michael L.". An unknown name produces a single notice event in
+today's calendar that lists the names the sheet does contain.
+
+To enable it, store the sheet id (the segment after `/d/` in its URL) as a secret:
+
+```bash
+npm run chore-sheet
+```
+
+It is a secret because the id alone grants read access to the sheet. When the
+community starts a new sheet (e.g. for a new year), run it again with the new id.
+
+### Times
+
+| Row label starts with / contains | Event |
+| --- | --- |
+| `Chefkok`, `Madlavning` | 15:00–17:45 on that day |
+| `Opvask` | 18:00–20:00 on that day |
+| `hele ugen` | all day, Monday to Sunday of that week |
+| anything else (e.g. `Søndagsoprydning`) | all day on that day |
+
+The rules are the `CHORE_TIMES` table in [src/chores.ts](src/chores.ts). A new row
+label that matches none of them is still published, as an all-day event. Text in the
+"Info, tid mm." row is added to the description of that day's chores, along with the
+rest of that day's rota.
+
+### How the sheet is read
+
+The sheet is edited by hand, so the parser does not rely on row or column positions.
+In each tab, the header row is the first row containing day headings such as
+`Tirsdag 20/10`. The row label is the first non-empty cell to the left of the day
+columns. The headings have no year, so the parser uses the year, within six months
+of today, in which the date falls on the named weekday. This also gives
+`Søndag 3/1` the right year in week 53.
+
+Google offers no keyless API that lists tabs, so the Worker reads the name → gid
+mapping from the sheet's `htmlview` page (undocumented, lists only visible tabs) and
+downloads each week tab with `export?format=csv&gid=…`. Tabs are chosen by the week
+number in their name, from last week onward, at most 30 per refresh. The `gviz`
+endpoint is not used: it drops cells that don't match a column's majority type, and
+it returns the first tab when asked for one that doesn't exist.
+
+If the sheet cannot be read, the Worker keeps serving the last schedule it loaded. If
+it has none, the feed contains a notice event saying so.
+
 ## Development
 
 ```bash

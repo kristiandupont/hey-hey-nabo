@@ -9,6 +9,7 @@
     "deploy": "wrangler deploy",
     "token": "wrangler secret put HEYNABO_TOKEN",
     "feed-secret": "wrangler secret put FEED_SECRET",
+    "chore-sheet": "wrangler secret put CHORE_SHEET_ID",
     "typecheck": "tsc --noEmit",
     "test": "node --test test/*.test.ts"
   },

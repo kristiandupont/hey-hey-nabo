@@ -102,8 +102,16 @@ export function toIcsEvents(events: HeyNaboEvent[], options: FeedOptions): IcsEv
   return mapped;
 }
 
-export function buildFeed(events: HeyNaboEvent[], options: FeedOptions): string {
-  return buildCalendar(toIcsEvents(events, options), {
+/**
+ * Render the calendar. HeyNabo events and chore events arrive as separate
+ * lists and are merged here, so the sort order covers both.
+ */
+export function buildFeed(
+  events: IcsEvent[],
+  options: Pick<FeedOptions, "calendarName" | "baseUrl">,
+): string {
+  const sorted = [...events].sort((a, b) => a.start.getTime() - b.start.getTime());
+  return buildCalendar(sorted, {
     name: options.calendarName,
     description: `Begivenheder fra ${new URL(options.baseUrl).host}`,
     ttlMinutes: TTL_MINUTES,
@@ -111,28 +119,30 @@ export function buildFeed(events: HeyNaboEvent[], options: FeedOptions): string 
 }
 
 /**
- * Served when HeyNabo rejects the session token. A feed that silently goes
+ * Shown when HeyNabo rejects the session token. A feed that silently goes
  * stale is invisible; an event sitting in today's calendar is not.
  */
-export function buildTokenExpiredFeed(options: { calendarName: string; now: Date }): string {
+export function tokenExpiredEvent(options: { calendarName: string; now: Date }): IcsEvent {
   const start = options.now;
   const end = new Date(start.getTime() + 60 * 60 * 1000);
 
-  return buildCalendar(
-    [
-      {
-        uid: "token-expired@heynabo-ics",
-        start,
-        end,
-        summary: `⚠️ ${options.calendarName}: kalenderen mangler et nyt token`,
-        description:
-          "HeyNabo afviste sessionen, så kalenderen kan ikke opdateres.\n\n" +
-          "Log ind i HeyNabo, kopiér den nye PHPSESSID og kør:\n" +
-          "npm run token",
-        status: "CONFIRMED",
-        timestamp: start,
-      },
-    ],
-    { name: options.calendarName, ttlMinutes: TTL_MINUTES },
-  );
+  return {
+    uid: "token-expired@heynabo-ics",
+    start,
+    end,
+    summary: `⚠️ ${options.calendarName}: kalenderen mangler et nyt token`,
+    description:
+      "HeyNabo afviste sessionen, så kalenderen kan ikke opdateres.\n\n" +
+      "Log ind i HeyNabo, kopiér den nye PHPSESSID og kør:\n" +
+      "npm run token",
+    status: "CONFIRMED",
+    timestamp: start,
+  };
+}
+
+export function buildTokenExpiredFeed(options: { calendarName: string; now: Date }): string {
+  return buildCalendar([tokenExpiredEvent(options)], {
+    name: options.calendarName,
+    ttlMinutes: TTL_MINUTES,
+  });
 }

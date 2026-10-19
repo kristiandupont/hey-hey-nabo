@@ -54,6 +54,11 @@ export function formatUtc(date: Date): string {
   return `${date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "")}`;
 }
 
+/** Format the UTC calendar date as a DATE value: 20260808 */
+export function formatDate(date: Date): string {
+  return date.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
 export type EventStatus = "CONFIRMED" | "CANCELLED" | "TENTATIVE";
 
 export interface IcsEvent {
@@ -61,6 +66,12 @@ export interface IcsEvent {
   uid: string;
   start: Date;
   end?: Date | null;
+  /**
+   * Emit DATE values instead of date-times. `start` and `end` are then read as
+   * UTC midnight of their calendar day, and `end` is exclusive (RFC 5545
+   * §3.6.1), so a one-day event ends on the following day.
+   */
+  allDay?: boolean;
   summary: string;
   description?: string;
   location?: string;
@@ -117,10 +128,15 @@ export function buildCalendar(events: IcsEvent[], options: CalendarOptions): str
     lines.push("BEGIN:VEVENT");
     addProperty(lines, "UID", event.uid);
     lines.push(`DTSTAMP:${formatUtc(event.timestamp)}`);
-    lines.push(`DTSTART:${formatUtc(event.start)}`);
-    // An event with no end is a point in time; omitting DTEND makes clients
-    // default it to the start, which is what we want.
-    if (event.end) lines.push(`DTEND:${formatUtc(event.end)}`);
+    if (event.allDay) {
+      lines.push(`DTSTART;VALUE=DATE:${formatDate(event.start)}`);
+      if (event.end) lines.push(`DTEND;VALUE=DATE:${formatDate(event.end)}`);
+    } else {
+      lines.push(`DTSTART:${formatUtc(event.start)}`);
+      // An event with no end is a point in time; omitting DTEND makes clients
+      // default it to the start, which is what we want.
+      if (event.end) lines.push(`DTEND:${formatUtc(event.end)}`);
+    }
 
     addProperty(lines, "SUMMARY", event.summary);
     addProperty(lines, "DESCRIPTION", event.description);
